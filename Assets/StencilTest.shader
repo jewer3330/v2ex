@@ -13,7 +13,7 @@
 			
 			Tags { "RenderType"="Opaque" }
 			ZTest Always 
-			ZWrite Off
+			ZWrite ON
 
 			Stencil
 			{
@@ -67,7 +67,7 @@
 		//模板缓冲不为1的地方画一个固定色，把模型放大一丢丢
 		Pass
 		{
-			ZWrite On ZTest On
+			ZWrite On ZTest LEqual
 			Stencil
 			{
 				Ref 1
@@ -95,8 +95,8 @@
 			v2f vert (appdata v)
 			{
 				v2f o;
-				o.vertex = 1.1 * o.vertex;
-				o.vertex = UnityObjectToClipPos(v.vertex);
+			    v.vertex = v.vertex  *1.1;
+				o.vertex = UnityObjectToClipPos(  v.vertex);
 				return o;
 			}
 			
