@@ -2,7 +2,7 @@
 {
 	Properties
 	{
-		_Cube ("CubeMap", Cube) = ""
+		_Cube ("CubeMap", Cube) = ""{}
 	}
 	SubShader
 	{
@@ -38,10 +38,10 @@
 
 				o.vertex = UnityObjectToClipPos(v.vertex);
 
-				float3 worldSpaceViewDir = WorldSpaceViewDir(mul(unity_ObjectToWorld,v.vertex));
+				float3 worldSpaceViewDir = WorldSpaceViewDir(v.vertex);
 				//float3 worldNormal = normalize(mul(v.normal,(float3x3)unity_WorldToObject));
 				float3 worldSpaceNormal = UnityObjectToWorldNormal(v.normal);
-				float3 worldSpaceReflectPos = reflect(worldSpaceViewDir,worldSpaceNormal);
+				float3 worldSpaceReflectPos = reflect(-worldSpaceViewDir,worldSpaceNormal);
 				o.uv = worldSpaceReflectPos;
 				return o;
 			}
@@ -51,7 +51,8 @@
 				
 				// sample the texture
 				fixed4 col = texCUBE(_Cube, i.uv);
-				return col;
+				half3 color = DecodeHDR(col, unity_SpecCube0_HDR);
+				return float4(color,1);
 			}
 			ENDCG
 		}

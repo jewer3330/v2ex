@@ -2,7 +2,7 @@
 {
 	Properties
 	{
-		_Cube ("CubeMap", Cube) = ""
+		_Cube ("CubeMap", Cube) = ""{}
 	}
 	SubShader
 	{
@@ -45,13 +45,14 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float3 worldSpaceViewDir = WorldSpaceViewDir(mul(unity_ObjectToWorld,i.uv));
+				float3 worldSpaceViewDir = WorldSpaceViewDir(i.uv);
 				//float3 worldNormal = normalize(mul(v.normal,(float3x3)unity_WorldToObject));
 				float3 worldSpaceNormal = UnityObjectToWorldNormal(i.normal);
 				float3 worldSpaceReflectPos = reflect(worldSpaceViewDir,worldSpaceNormal);
 				// sample the texture
 				fixed4 col = texCUBE(_Cube, worldSpaceReflectPos);
-				return col;
+				half3 color = DecodeHDR(col, unity_SpecCube0_HDR);
+				return float4(color,1);
 			}
 			ENDCG
 		}
