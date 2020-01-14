@@ -8,14 +8,13 @@
         [NoScaleOffset]_Reflect ("Reflect", 2D) = "white"{}
         
         [Toggle]_EnablePBR("EnablePBR",float) = 0
-        _Roughness("Roughness", Range(0,1)) = 0.3
-        _Metallic ("Metallic", Range(0,1)) = 0.3
+       
         //_Albedo ("Albedo", Color) = (1,1,1,1)
         [NoScaleOffset]_Albedo ("Albedo", 2D) = "white"{}
         [NoScaleOffset]_NoramlMap ("NormalMap", 2D) = "bump"{}
         [NoScaleOffset]_AO ("AO", 2D) = "white"{}
-        
-        
+        [NoScaleOffset]_Roughness("Roughness",2D) = "white"{}
+        [NoScaleOffset]_Metallic ("Metallic", 2D) = "white"{}
 	}
 	SubShader
 	{
@@ -56,11 +55,11 @@
             sampler _Reflect;
             
             bool _EnablePBR;
-            float _Roughness;
-            float _Metallic;
             sampler _Albedo;
             sampler _NoramlMap;
             sampler _AO;
+            sampler _Roughness;
+            sampler _Metallic;
 
 
             inline float3x3 getTBN (float3 normal, float4 tangent) {
@@ -130,6 +129,8 @@
                 fixed4 albedo = tex2D(_Albedo, i.uv);
 				fixed4 spec = tex2D(_Specular, i.uv);
                 fixed4 ao = tex2D(_AO, i.uv);
+                float roughness = tex2D(_Roughness, i.uv).r;
+                float3 matallic = tex2D(_Metallic, i.uv).rgb;
                 float relf = tex2D(_Reflect,i.uv).r;
                 //fixed4  metallic= tex2D(_Albedo, i.uv);
                 //fixed4  albedo= tex2D(_Metallic, i.uv);
@@ -170,13 +171,13 @@
                     float3 h = normalize( worldSpaceViewDir + worldSpaceLightDir);
                     if(!_EnablePBR)
                     {
-                        specular = pow(max(0,dot(worldSpaceNormal,h)),_Power) * _Metallic;
+                        specular = pow(max(0,dot(worldSpaceNormal,h)),_Power) * matallic;
                     }
                     else
                     {
                         //对所有的关进行遍历，这里只有一个平行光
                         float3 F0 = 0.04; 
-                        F0      = lerp(F0, albedo.rgb, _Metallic);
+                        F0      = lerp(F0, albedo.rgb, matallic);
                         
                         float3 N = worldSpaceNormal;
                         float3 H = h;
@@ -194,14 +195,14 @@
                         // cook-torrance brdf
                         float3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);
                         //DGF
-                        float NDF =  D_GGX_TR(N,H,_Roughness);
+                        float NDF =  D_GGX_TR(N,H,roughness);
                         //G
-                        float G =  GeometrySmith(N,V,L,_Roughness);
+                        float G =  GeometrySmith(N,V,L,roughness);
 
 
                         float3 kS = F;
                         float3 kD = 1 - kS;
-                        kD *= 1.0 - _Metallic;     
+                        kD *= 1.0 - matallic;     
 
                         float3 nominator    = NDF * G * F;
                         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; 
